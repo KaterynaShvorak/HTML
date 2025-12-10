@@ -7,13 +7,14 @@
     <style>
         /* Сучасні змінні кольорів */
         :root {
-            --primary-color: #4f46e5; /* Індиго */
+            --primary-color: #4f46e5;
             --primary-hover: #4338ca;
             --bg-color: #f3f4f6;
             --card-bg: #ffffff;
             --text-color: #1f2937;
             --text-muted: #6b7280;
             --border-color: #e5e7eb;
+            --success-color: #059669;
             --radius: 12px;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
@@ -40,7 +41,6 @@
             position: relative;
         }
 
-        /* Стиль для перемикача мови (верхній правий кут) */
         .language-switcher {
             position: absolute;
             top: 1.5rem;
@@ -90,12 +90,11 @@
             border-radius: 8px;
             font-size: 1rem;
             transition: border-color 0.2s, box-shadow 0.2s;
-            box-sizing: border-box; /* Важливо для відступів */
-            appearance: none; /* Прибирає стандартний стиль браузера */
+            box-sizing: border-box;
+            appearance: none;
             background-color: #fff;
         }
 
-        /* Стилізація селекту (стрілка) */
         select {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 0.5rem center;
@@ -148,12 +147,52 @@
             display: block;
         }
 
+        .main-result {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 5px;
+        }
+
         .result-value {
             font-size: 2rem;
             font-weight: 800;
             color: var(--primary-color);
-            display: block;
             line-height: 1;
+        }
+
+        .currency-symbol {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .usd-result {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .usd-result.visible {
+            opacity: 1;
+        }
+
+        .usd-value-container {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--success-color);
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .rate-info {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
         }
     </style>
 </head>
@@ -203,11 +242,23 @@
 
     <div class="result-box">
         <span class="result-label" id="resLabel">Ви отримаєте:</span>
-        <span class="result-value" id="resultText">0.00</span>
+        <div class="main-result">
+            <span class="result-value" id="resultText">0.00</span>
+            <span class="currency-symbol" id="currencySymbol">грн</span>
+        </div>
+        
+        <div class="usd-result" id="usdResultBox">
+            <div class="usd-value-container">
+                <span>≈ $</span><span id="usdNumber">0.00</span>
+            </div>
+            <div class="rate-info" id="rateInfoText">Курс НБУ: завантаження...</div>
+        </div>
     </div>
 </div>
 
 <script>
+    let nbuRate = null;
+
     const translations = {
         en: {
             title: "Salary Calculator",
@@ -216,6 +267,8 @@
             hoursLabel: "Hours worked:",
             calculateButton: "Calculate",
             resultLabel: "Total Payout:",
+            currency: "UAH",
+            rateLabel: "NBU Rate:",
             months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
         },
         uk: {
@@ -225,9 +278,34 @@
             hoursLabel: "Відпрацьовані години:",
             calculateButton: "Розрахувати",
             resultLabel: "Ви отримаєте:",
+            currency: "грн",
+            rateLabel: "Курс НБУ:",
             months: ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"]
         }
     };
+
+    async function fetchNbuRate() {
+        try {
+            const response = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=USD&json');
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const data = await response.json();
+            if (data && data.length > 0) {
+                nbuRate = data[0].rate;
+                updateRateText();
+            }
+        } catch (error) {
+            console.error("Не вдалося отримати курс НБУ:", error);
+            document.getElementById("rateInfoText").innerText = "Курс недоступний";
+        }
+    }
+
+    function updateRateText() {
+        if (!nbuRate) return;
+        const lang = document.getElementById("language").value;
+        const label = translations[lang].rateLabel;
+        document.getElementById("rateInfoText").innerText = `${label} ${nbuRate.toFixed(2)} UAH/USD`;
+    }
 
     function calculateSalary() {
         const salary = parseFloat(document.getElementById("salary").value);
@@ -240,12 +318,25 @@
         }
 
         const workingDays = getWorkingDaysInMonth(month);
-        // Логіка з вашого коду: ставка / робочі дні / 9 годин * відпрацьовані години
         const dailySalary = salary / workingDays / 9; 
         const totalSalary = dailySalary * hours;
         
-        // Анімація числа
+        // 1. Анімація для Гривні
         animateValue(document.getElementById("resultText"), 0, totalSalary, 500);
+
+        // 2. Анімація для Долара
+        const usdBox = document.getElementById("usdResultBox");
+        if (nbuRate) {
+            const usdAmount = totalSalary / nbuRate;
+            
+            // Викликаємо ту саму функцію анімації, але для елемента з числом долара
+            animateValue(document.getElementById("usdNumber"), 0, usdAmount, 500);
+            
+            usdBox.classList.add('visible');
+            updateRateText();
+        } else {
+            usdBox.classList.remove('visible');
+        }
     }
 
     function getWorkingDaysInMonth(month) {
@@ -273,18 +364,17 @@
         document.querySelector('label[for="hours"]').innerText = translation.hoursLabel;
         document.getElementById("calcBtn").innerText = translation.calculateButton;
         document.getElementById("resLabel").innerText = translation.resultLabel;
+        document.getElementById("currencySymbol").innerText = translation.currency;
 
-        // Оновлення списку місяців
         const monthSelect = document.getElementById("month");
-        const currentSelection = monthSelect.value; // зберігаємо вибір
-        
-        // Оновлюємо текст опцій, не перестворюючи їх, щоб не збити value
         for(let i = 0; i < 12; i++) {
             monthSelect.options[i].text = translation.months[i];
         }
+
+        updateRateText();
     }
     
-    // Проста функція анімації для числа
+    // Універсальна функція анімації
     function animateValue(obj, start, end, duration) {
         let startTimestamp = null;
         const step = (timestamp) => {
@@ -298,7 +388,7 @@
         window.requestAnimationFrame(step);
     }
 
-    // Set initial state
+    fetchNbuRate();
     changeLanguage();
 </script>
 </body>
