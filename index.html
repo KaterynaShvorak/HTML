@@ -1,111 +1,305 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Калькулятор зарплати</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор зарплати</title>
+    <style>
+        /* Сучасні змінні кольорів */
+        :root {
+            --primary-color: #4f46e5; /* Індиго */
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+        }
+
+        /* Стиль для перемикача мови (верхній правий кут) */
+        .language-switcher {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+        }
+
+        .language-switcher select {
+            border: none;
+            background: transparent;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            outline: none;
+            padding: 4px;
+        }
+        
+        .language-switcher select:hover {
+            color: var(--primary-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--text-color);
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box; /* Важливо для відступів */
+            appearance: none; /* Прибирає стандартний стиль браузера */
+            background-color: #fff;
+        }
+
+        /* Стилізація селекту (стрілка) */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        button {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .result-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px dashed var(--border-color);
+        }
+
+        .result-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            display: block;
+            line-height: 1;
+        }
+    </style>
 </head>
 <body>
-	<h1>Калькулятор зарплати</h1>
-	<form>
-		<label for="salary">Зарплата:</label>
-		<input type="number" id="salary" name="salary"><br><br>
-	<label for="month">Місяць:</label>
-	<select id="month" name="month">
-		<option value="1">Січень</option>
-		<option value="2">Лютий</option>
-		<option value="3">Березень</option>
-		<option value="4">Квітень</option>
-		<option value="5">Травень</option>
-		<option value="6">Червень</option>
-		<option value="7">Липень</option>
-		<option value="8">Серпень</option>
-		<option value="9">Вересень</option>
-		<option value="10">Жовтень</option>
-		<option value="11">Листопад</option>
-		<option value="12">Грудень</option>
-	</select><br><br>
 
-	<label for="hours">Відпрацьовані години:</label>
-	<input type="number" id="hours" name="hours"><br><br>
+<div class="container">
+    <div class="language-switcher">
+        <select id="language" name="language" onchange="changeLanguage()">
+            <option value="uk" selected>UA</option>
+            <option value="en">EN</option>
+        </select>
+    </div>
 
-	<button type="button" onclick="calculateSalary()">Розрахувати зарплату</button><br><br>
+    <h1 id="pageTitle">Калькулятор зарплати</h1>
 
-	<label for="result">Ви отримаєте:</label>
-	<input type="number" id="result" name="result" disabled><br><br>
+    <form onsubmit="event.preventDefault(); calculateSalary();">
+        <div class="form-group">
+            <label for="salary">Зарплата (ставка):</label>
+            <input type="number" id="salary" name="salary" placeholder="0.00">
+        </div>
 
-	<label for="language">Мова:</label>
-	<select id="language" name="language" onchange="changeLanguage()">
-		<option value="en">English</option>
-		<option value="uk">Українська</option>
-	</select>
-</form>
+        <div class="form-group">
+            <label for="month">Місяць:</label>
+            <select id="month" name="month">
+                <option value="1">Січень</option>
+                <option value="2">Лютий</option>
+                <option value="3">Березень</option>
+                <option value="4">Квітень</option>
+                <option value="5">Травень</option>
+                <option value="6">Червень</option>
+                <option value="7">Липень</option>
+                <option value="8">Серпень</option>
+                <option value="9">Вересень</option>
+                <option value="10">Жовтень</option>
+                <option value="11">Листопад</option>
+                <option value="12">Грудень</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="hours">Відпрацьовані години:</label>
+            <input type="number" id="hours" name="hours" placeholder="0">
+        </div>
+
+        <button type="submit" id="calcBtn">Розрахувати</button>
+    </form>
+
+    <div class="result-box">
+        <span class="result-label" id="resLabel">Ви отримаєте:</span>
+        <span class="result-value" id="resultText">0.00</span>
+    </div>
+</div>
 
 <script>
-	const translations = {
-		en: {
-			salaryLabel: "Salary:",
-			monthLabel: "Month:",
-			hoursLabel: "Worked hours:",
-			calculateButton: "Calculate salary",
-			resultLabel: "You will receive:",
-			languageLabel: "Language:",
-			englishOption: "English",
-			ukrainianOption: "Українська"
-		},
-		uk: {
-			salaryLabel: "Зарплата:",
-			monthLabel: "Місяць:",
-			hoursLabel: "Відпрацьовані години:",
-			calculateButton: "Розрахувати зарплату",
-			resultLabel: "Ви отримаєте:",
-			languageLabel: "Мова:",
-			englishOption: "English",
-			ukrainianOption: "Українська"
-		}
-	};
+    const translations = {
+        en: {
+            title: "Salary Calculator",
+            salaryLabel: "Salary (Rate):",
+            monthLabel: "Month:",
+            hoursLabel: "Hours worked:",
+            calculateButton: "Calculate",
+            resultLabel: "Total Payout:",
+            months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        },
+        uk: {
+            title: "Калькулятор зарплати",
+            salaryLabel: "Зарплата (ставка):",
+            monthLabel: "Місяць:",
+            hoursLabel: "Відпрацьовані години:",
+            calculateButton: "Розрахувати",
+            resultLabel: "Ви отримаєте:",
+            months: ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"]
+        }
+    };
 
-	function calculateSalary() {
-		const salary = document.getElementById("salary").value;
-		const month = document.getElementById("month").value;
-		const hours = document.getElementById("hours").value;
-		const workingDays = getWorkingDaysInMonth(month);
-		const dailySalary = salary / workingDays / 9;
-		const totalSalary = dailySalary * hours;
-		document.getElementById("result").value = totalSalary.toFixed(2);
-	}
+    function calculateSalary() {
+        const salary = parseFloat(document.getElementById("salary").value);
+        const month = parseInt(document.getElementById("month").value);
+        const hours = parseFloat(document.getElementById("hours").value);
 
-	function getWorkingDaysInMonth(month) {
-		const date = new Date();
-		date.setMonth(month - 1);
-		const year = date.getFullYear();
-		const daysInMonth = new Date(year, month, 0).getDate();
-		let workingDays = 0;
-		for (let i = 1; i <= daysInMonth; i++) {
-			date.setDate(i);
-			if (date.getDay() !== 6 && date.getDay() !== 0) {
-				workingDays++;
-			}
-		}
-		return workingDays;
-	}
+        if (isNaN(salary) || isNaN(hours)) {
+            alert("Будь ласка, заповніть всі поля коректно.");
+            return;
+        }
 
-	function changeLanguage() {
-		const selectedLanguage = document.getElementById("language").value;
-		const translation = translations[selectedLanguage];
+        const workingDays = getWorkingDaysInMonth(month);
+        // Логіка з вашого коду: ставка / робочі дні / 9 годин * відпрацьовані години
+        const dailySalary = salary / workingDays / 9; 
+        const totalSalary = dailySalary * hours;
+        
+        // Анімація числа
+        animateValue(document.getElementById("resultText"), 0, totalSalary, 500);
+    }
 
-		document.querySelector('label[for="salary"]').innerHTML = translation.salaryLabel;
-		document.querySelector('label[for="month"]').innerHTML = translation.monthLabel;
-		document.querySelector('label[for="hours"]').innerHTML = translation.hoursLabel;
-		document.querySelector('button').innerHTML = translation.calculateButton;
-		document.querySelector('label[for="result"]').innerHTML = translation.resultLabel;
-		document.querySelector('label[for="language"]').innerHTML = translation.languageLabel;
+    function getWorkingDaysInMonth(month) {
+        const date = new Date();
+        date.setMonth(month - 1);
+        const year = date.getFullYear();
+        const daysInMonth = new Date(year, month, 0).getDate();
+        let workingDays = 0;
+        for (let i = 1; i <= daysInMonth; i++) {
+            date.setDate(i);
+            if (date.getDay() !== 6 && date.getDay() !== 0) {
+                workingDays++;
+            }
+        }
+        return workingDays;
+    }
 
-		const languageSelect = document.getElementById("language");
-		languageSelect.options[0].innerHTML = translation.englishOption;
-		languageSelect.options[1].innerHTML = translation.ukrainianOption;
-	}
+    function changeLanguage() {
+        const selectedLanguage = document.getElementById("language").value;
+        const translation = translations[selectedLanguage];
 
-	changeLanguage(); // set initial language based on browser language
+        document.getElementById("pageTitle").innerText = translation.title;
+        document.querySelector('label[for="salary"]').innerText = translation.salaryLabel;
+        document.querySelector('label[for="month"]').innerText = translation.monthLabel;
+        document.querySelector('label[for="hours"]').innerText = translation.hoursLabel;
+        document.getElementById("calcBtn").innerText = translation.calculateButton;
+        document.getElementById("resLabel").innerText = translation.resultLabel;
 
+        // Оновлення списку місяців
+        const monthSelect = document.getElementById("month");
+        const currentSelection = monthSelect.value; // зберігаємо вибір
+        
+        // Оновлюємо текст опцій, не перестворюючи їх, щоб не збити value
+        for(let i = 0; i < 12; i++) {
+            monthSelect.options[i].text = translation.months[i];
+        }
+    }
+    
+    // Проста функція анімації для числа
+    function animateValue(obj, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.innerHTML = (progress * (end - start) + start).toFixed(2);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
+    // Set initial state
+    changeLanguage();
 </script>
 </body>
 </html>
